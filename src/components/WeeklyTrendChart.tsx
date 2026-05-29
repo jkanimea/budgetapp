@@ -17,14 +17,12 @@ interface Props {
 }
 
 export function WeeklyTrendChart({ data }: Props) {
-  const chartData = data
-    .map((w) => ({
-      week: new Date(w.weekStart).toLocaleDateString("en-NZ", { month: "short", day: "numeric" }),
-      Income: w.totalIncome,
-      Expenses: w.totalExpense,
-      Savings: w.netSavings,
-    }))
-    .reverse();
+  const chartData = data.map((w) => ({
+    week: new Date(w.weekStart).toLocaleDateString("en-NZ", { month: "short", day: "numeric" }),
+    Income: w.totalIncome,
+    Expenses: w.totalExpense,
+    Savings: w.netSavings,
+  }));
 
   if (data.length === 0) {
     return <div className="text-center py-8 text-slate-400"><i className="pi pi-chart-line text-3xl block mb-2" />No weekly data to display</div>;

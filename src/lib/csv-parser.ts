@@ -13,22 +13,25 @@ export function parseCsvContent(content: string): ParsedTransaction[] {
     console.error("CSV parse errors:", result.errors);
   }
 
-  const rows: ParsedTransaction[] = result.data
+  const rows: (ParsedTransaction | null)[] = result.data
     .filter((row) => row.Amount !== undefined && row.Amount !== "" && row.Date)
-    .map((row) => ({
-      type: row.Type?.trim() || "",
-      details: row.Details?.trim() || "",
-      particulars: row.Particulars?.trim() || "",
-      code: row.Code?.trim() || "",
-      reference: row.Reference?.trim() || "",
-      amount: dollarsToCents(parseFloat(row.Amount) || 0),
-      date: parseDateStrict(row.Date)!,
-      foreignCurrencyAmount: row.ForeignCurrencyAmount ? dollarsToCents(parseFloat(row.ForeignCurrencyAmount)) : null,
-      conversionCharge: row.ConversionCharge ? dollarsToCents(parseFloat(row.ConversionCharge)) : null,
-    }))
-    .filter((tx) => tx.date !== null);
+    .map((row) => {
+      const date = parseDateStrict(row.Date);
+      if (!date) return null;
+      return {
+        type: row.Type?.trim() || "",
+        details: row.Details?.trim() || "",
+        particulars: row.Particulars?.trim() || "",
+        code: row.Code?.trim() || "",
+        reference: row.Reference?.trim() || "",
+        amount: dollarsToCents(parseFloat(row.Amount) || 0),
+        date,
+        foreignCurrencyAmount: row.ForeignCurrencyAmount ? dollarsToCents(parseFloat(row.ForeignCurrencyAmount)) : null,
+        conversionCharge: row.ConversionCharge ? dollarsToCents(parseFloat(row.ConversionCharge)) : null,
+      };
+    });
 
-  return rows;
+  return rows.filter((tx): tx is ParsedTransaction => tx !== null);
 }
 
 function dollarsToCents(dollars: number): number {

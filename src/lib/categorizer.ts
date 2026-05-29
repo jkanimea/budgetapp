@@ -128,5 +128,5 @@ export const SEED_CATEGORIES: { name: string; type: string; icon: string; color:
   { name: "Income", type: "INCOME", icon: "💼", color: "#22c55e" },
   { name: "Salary", type: "INCOME", icon: "💼", color: "#16a34a" },
   { name: "Government Benefits", type: "INCOME", icon: "🏛️", color: "#059669" },
-  { name: "Income - Other", type: "INCOME", icon: "📈", color: "#10b981" },
+  { name: "Interest", type: "INCOME", icon: "📈", color: "#10b981" },
 ];

@@ -41,7 +41,7 @@ export function BudgetForm({ budgets, categories, onSave, onDelete }: Props) {
     .map((c) => ({ label: `${c.icon ?? ""} ${c.name}`.trim(), value: c.id }));
 
   const handleSave = async () => {
-    if (!categoryId || !amount) return;
+    if (!categoryId || amount == null) return;
     setSaving(true);
     await onSave(categoryId, amount);
     setCategoryId(null);
@@ -67,7 +67,7 @@ export function BudgetForm({ budgets, categories, onSave, onDelete }: Props) {
           <InputNumber
             value={amount}
             onValueChange={(e) => setAmount(e.value ?? null)}
-            min={0}
+            min={1}
             placeholder="0.00"
             className="w-40"
             prefix="$ "
@@ -77,7 +77,7 @@ export function BudgetForm({ budgets, categories, onSave, onDelete }: Props) {
           label="Add Budget"
           icon="pi pi-plus"
           onClick={handleSave}
-          disabled={!categoryId || !amount || saving}
+          disabled={!categoryId || amount == null || amount <= 0 || saving}
           loading={saving}
         />
       </div>

@@ -32,6 +32,7 @@ export default function TransactionsPage() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState("");
   const [page, setPage] = useState(0);
@@ -66,12 +67,19 @@ export default function TransactionsPage() {
   }, [fetchTransactions]);
 
   const onSearchChange = (val: string) => {
-    setSearch(val);
+    setSearchInput(val);
     clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
+      setSearch(val);
       setPage(0);
       setFirst(0);
-    }, 300);
+    }, 350);
+  };
+
+  const onTypeChange = (val: string) => {
+    setTypeFilter(val);
+    setPage(0);
+    setFirst(0);
   };
 
   const onPageChange = (e: { first: number; page: number }) => {
@@ -114,14 +122,14 @@ export default function TransactionsPage() {
           <span className="flex-1 relative">
             <i className="pi pi-search absolute" style={{ left: "12px", top: "10px", fontSize: "14px", color: "#94a3b8" }} />
             <InputText
-              value={search}
+              value={searchInput}
               onChange={(e) => onSearchChange(e.target.value)}
               className="w-full pl-10"
             />
           </span>
           <Dropdown
             value={typeFilter}
-            onChange={(e) => { setTypeFilter(e.value); setPage(0); setFirst(0); }}
+            onChange={(e) => onTypeChange(e.value)}
             options={TYPE_OPTIONS}
             className="w-48"
           />

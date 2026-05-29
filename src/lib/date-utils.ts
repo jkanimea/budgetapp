@@ -2,11 +2,7 @@ import {
   startOfWeek,
   endOfWeek,
   format,
-  parseISO,
-  startOfMonth,
-  endOfMonth,
   subWeeks,
-  isWithinInterval,
 } from "date-fns";
 
 export function getWeekRange(date: Date = new Date()): { start: Date; end: Date } {
@@ -26,4 +22,4 @@ export function formatWeekLabel(date: Date): string {
   return `${format(start, "MMM d")} - ${format(end, "MMM d, yyyy")}`;
 }
 
-export { format, parseISO, subWeeks, startOfWeek, endOfWeek };
+export { format, subWeeks, startOfWeek, endOfWeek };

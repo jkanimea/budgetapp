@@ -52,7 +52,7 @@ export class BudgetService {
         categoryId: b.categoryId,
         budgeted: Math.round(b.weeklyAmount) / 100,
         spent: Math.round(spentCents) / 100,
-        remaining: (b.weeklyAmount - spentCents) / 100,
+        remaining: Math.round(b.weeklyAmount - spentCents) / 100,
       };
     });
   }

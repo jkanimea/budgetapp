@@ -148,7 +148,7 @@ export default function DashboardPage() {
               {[
                 { label: "Income", value: data.totalIncome, cls: "text-green-600" },
                 { label: "Expenses", value: data.totalExpense, cls: "text-red-600" },
-                { label: "Savings", value: data.totalSavings, cls: data.totalSavings >= 0 ? "text-blue-600" : "text-orange-600" },
+                { label: data.totalSavings >= 0 ? "Savings" : "Overspend", value: data.totalSavings, cls: data.totalSavings >= 0 ? "text-blue-600" : "text-orange-600" },
               ].map((s) => (
                 <div key={s.label} className="flex justify-between items-center py-2 border-b border-slate-100 last:border-0">
                   <span className="text-slate-600">{s.label}</span>

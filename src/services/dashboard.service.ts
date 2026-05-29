@@ -1,14 +1,15 @@
 import { prisma } from "@/lib/prisma";
-import { getWeekRange, getWeekKey, subWeeks, startOfWeek, format } from "@/lib/date-utils";
+import { subWeeks, startOfWeek, endOfWeek, format } from "@/lib/date-utils";
 import { WeeklySummary, DashboardData } from "@/types";
+import { budgetService } from "./budget.service";
 
 function centsToDollars(cents: number): number {
   return Math.round(cents) / 100;
 }
 
 export class DashboardService {
-  async getWeeklySummaries(weeksBack: number = 12): Promise<WeeklySummary[]> {
-    const endDate = new Date();
+  async getWeeklySummaries(date?: Date, weeksBack: number = 12): Promise<WeeklySummary[]> {
+    const endDate = date || new Date();
     const startDate = subWeeks(endDate, weeksBack - 1);
 
     const transactions = await prisma.transaction.findMany({
@@ -43,7 +44,7 @@ export class DashboardService {
     for (let i = weeksBack - 1; i >= 0; i--) {
       const weekDate = subWeeks(endDate, i);
       const weekKey = format(startOfWeek(weekDate, { weekStartsOn: 1 }), "yyyy-MM-dd");
-      const weekEnd = format(new Date(weekKey), "yyyy-MM-dd");
+      const weekEnd = format(endOfWeek(weekDate, { weekStartsOn: 1 }), "yyyy-MM-dd");
 
       const data = weekMap.get(weekKey);
 
@@ -86,15 +87,13 @@ export class DashboardService {
   }
 
   async getWeeklySummary(date?: Date): Promise<WeeklySummary> {
-    const summaries = await this.getWeeklySummaries(1);
+    const summaries = await this.getWeeklySummaries(date, 1);
     return summaries[summaries.length - 1];
   }
 
   async getDashboardData(weeksBack: number = 12): Promise<DashboardData> {
-    const weeklyHistory = await this.getWeeklySummaries(weeksBack);
+    const weeklyHistory = await this.getWeeklySummaries(undefined, weeksBack);
     const currentWeek = weeklyHistory[weeklyHistory.length - 1];
-
-    const allSummaries = weeklyHistory.slice(0, weeksBack);
 
     const aggIncome = await prisma.transaction.aggregate({
       _sum: { amount: true },
@@ -108,33 +107,11 @@ export class DashboardService {
     const totalIncome = centsToDollars(aggIncome._sum.amount ?? 0);
     const totalExpense = centsToDollars(Math.abs(aggExpense._sum.amount ?? 0));
 
-    const budgets = await prisma.budget.findMany({ include: { category: true } });
-    const { start, end } = getWeekRange();
-    const expenses = await prisma.transaction.groupBy({
-      by: ["categoryId"],
-      where: {
-        date: { gte: start, lte: end },
-        amount: { lt: 0 },
-        type: { not: "Transfer" },
-        categoryId: { not: null },
-      },
-      _sum: { amount: true },
-    });
-    const expenseMap = new Map(expenses.map((e) => [e.categoryId, Math.abs(e._sum.amount ?? 0)]));
-
-    const budgetComparison = budgets.map((b) => {
-      const spentCents = expenseMap.get(b.categoryId) ?? 0;
-      return {
-        categoryName: b.category.name,
-        budgeted: centsToDollars(b.weeklyAmount),
-        spent: centsToDollars(spentCents),
-        remaining: centsToDollars(b.weeklyAmount - spentCents),
-      };
-    });
+    const budgetComparison = await budgetService.getBudgetComparison();
 
     return {
       currentWeek,
-      weeklyHistory: allSummaries,
+      weeklyHistory,
       topExpenses: currentWeek.categoryBreakdown.slice(0, 5),
       totalIncome,
       totalExpense,

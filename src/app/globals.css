@@ -99,23 +99,6 @@ body {
   margin-right: 2rem;
 }
 
-.p-fileupload .p-fileupload-buttonbar {
-  background: transparent;
-  border: 2px dashed #cbd5e1;
-  border-radius: 12px;
-  padding: 2rem;
-  text-align: center;
-}
-
-.p-fileupload .p-fileupload-buttonbar .p-button {
-  margin: 0 auto;
-}
-
-.p-fileupload .p-fileupload-content {
-  border: none;
-  padding: 0;
-}
-
 .p-chip {
   font-size: 0.75rem;
   padding: 0.25rem 0.75rem;

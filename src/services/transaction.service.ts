@@ -83,21 +83,23 @@ export class TransactionService {
       });
     }
 
-    const existing = await prisma.transaction.findMany({
-      where: {
-        OR: txRows.map((tx) => ({
-          date: tx.date,
-          type: tx.type,
-          amount: tx.amount,
-          details: tx.details,
-        })),
-      },
-      select: { date: true, type: true, amount: true, details: true },
-    });
-
-    const existingSet = new Set(
-      existing.map((e) => `${+e.date}|${e.type}|${e.amount}|${e.details}`)
-    );
+    const existingSet = new Set<string>();
+    if (txRows.length > 0) {
+      const existing = await prisma.transaction.findMany({
+        where: {
+          OR: txRows.map((tx) => ({
+            date: tx.date,
+            type: tx.type,
+            amount: tx.amount,
+            details: tx.details,
+          })),
+        },
+        select: { date: true, type: true, amount: true, details: true },
+      });
+      for (const e of existing) {
+        existingSet.add(`${+e.date}|${e.type}|${e.amount}|${e.details}`);
+      }
+    }
 
     const newRows = txRows.filter(
       (tx) => !existingSet.has(`${+tx.date}|${tx.type}|${tx.amount}|${tx.details}`)
@@ -105,9 +107,7 @@ export class TransactionService {
 
     if (newRows.length === 0) return 0;
 
-    if (newRows.length > 0) {
-      await prisma.transaction.createMany({ data: newRows });
-    }
+    await prisma.transaction.createMany({ data: newRows });
 
     return newRows.length;
   }
@@ -131,9 +131,14 @@ export class TransactionService {
     if (filters?.categoryId) where.categoryId = filters.categoryId;
     if (filters?.type) where.type = filters.type;
     if (filters?.search) {
-      where.OR = [
-        { details: { contains: filters.search } },
-        { particulars: { contains: filters.search } },
+      where.AND = [
+        ...(where.AND ? (where.AND as Record<string, unknown>[]) : []),
+        {
+          OR: [
+            { details: { contains: filters.search } },
+            { particulars: { contains: filters.search } },
+          ],
+        },
       ];
     }
 

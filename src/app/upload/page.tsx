@@ -1,15 +1,15 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useCallback } from "react";
 import { Card } from "primereact/card";
 import { Button } from "primereact/button";
-
 import { Toast } from "primereact/toast";
 import { Navigation } from "@/components/Navigation";
 
 export default function UploadPage() {
   const [uploading, setUploading] = useState(false);
   const [fileName, setFileName] = useState<string | null>(null);
+  const [dragOver, setDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const toast = useRef<Toast>(null);
 
@@ -19,6 +19,25 @@ export default function UploadPage() {
       setFileName(file.name);
     }
   };
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setDragOver(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file && file.name.endsWith(".csv")) {
+      setFileName(file.name);
+      const dt = new DataTransfer();
+      dt.items.add(file);
+      if (fileInputRef.current) fileInputRef.current.files = dt.files;
+    }
+  }, []);
+
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setDragOver(true);
+  }, []);
+
+  const handleDragLeave = useCallback(() => setDragOver(false), []);
 
   const handleUpload = async () => {
     const file = fileInputRef.current?.files?.[0];
@@ -60,8 +79,11 @@ export default function UploadPage() {
         <Card>
           <div className="flex flex-col items-center gap-4">
             <div
-              className="border-2 border-dashed border-slate-300 rounded-xl p-10 w-full text-center cursor-pointer hover:border-blue-400 transition-colors"
+              className={`border-2 border-dashed rounded-xl p-10 w-full text-center cursor-pointer transition-colors ${dragOver ? "border-blue-500 bg-blue-50" : "border-slate-300 hover:border-blue-400"}`}
               onClick={() => fileInputRef.current?.click()}
+              onDrop={handleDrop}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
             >
               <input
                 ref={fileInputRef}
