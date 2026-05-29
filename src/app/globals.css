@@ -1,26 +1,143 @@
 @import "tailwindcss";
-
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+@import "primereact/resources/themes/lara-light-blue/theme.css";
+@import "primereact/resources/primereact.css";
+@import "primeicons/primeicons.css";
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #f8fafc;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+.p-datatable .p-datatable-thead > tr > th {
+  background: #f1f5f9;
+  color: #475569;
+  font-weight: 600;
+  font-size: 0.875rem;
+  padding: 0.75rem 1rem;
+}
+
+.p-datatable .p-datatable-tbody > tr > td {
+  padding: 0.625rem 1rem;
+  font-size: 0.875rem;
+}
+
+.p-card {
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.p-card .p-card-body {
+  padding: 1.5rem;
+}
+
+.p-card .p-card-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.p-card .p-card-content {
+  padding: 0;
+}
+
+.p-panel .p-panel-header {
+  background: transparent;
+  border: none;
+  padding: 0 0 1rem 0;
+  font-weight: 600;
+  font-size: 1.125rem;
+}
+
+.p-panel .p-panel-content {
+  border: none;
+  padding: 0;
+}
+
+.p-inputtext {
+  font-size: 0.875rem;
+  padding: 0.625rem 0.75rem;
+}
+
+.p-dropdown {
+  font-size: 0.875rem;
+}
+
+.p-button {
+  font-size: 0.875rem;
+  padding: 0.625rem 1.25rem;
+}
+
+.p-menubar {
+  border-radius: 0;
+  padding: 0.75rem 1.5rem;
+  background: #1e293b;
+  border: none;
+}
+
+.p-menubar .p-menubar-root-list > .p-menuitem > .p-menuitem-content .p-menuitem-link {
+  color: #94a3b8;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+}
+
+.p-menubar .p-menubar-root-list > .p-menuitem > .p-menuitem-content .p-menuitem-link:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+}
+
+.p-menubar .p-menubar-root-list > .p-menuitem.p-menuitem-active > .p-menuitem-content .p-menuitem-link {
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+}
+
+.p-menubar .p-menubar-label {
+  color: #ffffff;
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-right: 2rem;
+}
+
+.p-fileupload .p-fileupload-buttonbar {
+  background: transparent;
+  border: 2px dashed #cbd5e1;
+  border-radius: 12px;
+  padding: 2rem;
+  text-align: center;
+}
+
+.p-fileupload .p-fileupload-buttonbar .p-button {
+  margin: 0 auto;
+}
+
+.p-fileupload .p-fileupload-content {
+  border: none;
+  padding: 0;
+}
+
+.p-chip {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.75rem;
+}
+
+.chart-container {
+  position: relative;
+  width: 100%;
+  min-height: 280px;
+}
+
+.summary-card-income {
+  background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+  border: 1px solid #a7f3d0;
+}
+
+.summary-card-expense {
+  background: linear-gradient(135deg, #fef2f2, #fecaca);
+  border: 1px solid #fca5a5;
+}
+
+.summary-card-savings {
+  background: linear-gradient(135deg, #eff6ff, #bfdbfe);
+  border: 1px solid #93c5fd;
 }
