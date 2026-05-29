@@ -16,10 +16,6 @@ type TransactionIncludeCategory = {
   category: { id: number; name: string; type: string; icon: string | null; color: string | null } | null;
 };
 
-function centsToDollars(cents: number): number {
-  return Math.round(cents) / 100;
-}
-
 export class TransactionService {
   async seedCategories(): Promise<void> {
     await prisma.$transaction(
@@ -83,27 +79,42 @@ export class TransactionService {
       });
     }
 
-    const existingSet = new Set<string>();
-    if (txRows.length > 0) {
+    // Group CSV rows by key and count how many of each appear
+    type TxRow = typeof txRows[number];
+    const csvGroups = new Map<string, TxRow[]>();
+    for (const tx of txRows) {
+      const key = `${+tx.date}|${tx.type}|${tx.amount}|${tx.details}`;
+      if (!csvGroups.has(key)) csvGroups.set(key, []);
+      csvGroups.get(key)!.push(tx);
+    }
+
+    // Query DB for how many of each key already exist
+    const dbKeyCounts = new Map<string, number>();
+    if (csvGroups.size > 0) {
       const existing = await prisma.transaction.findMany({
         where: {
-          OR: txRows.map((tx) => ({
-            date: tx.date,
-            type: tx.type,
-            amount: tx.amount,
-            details: tx.details,
+          OR: Array.from(csvGroups.values()).map((rows) => ({
+            date: rows[0].date,
+            type: rows[0].type,
+            amount: rows[0].amount,
+            details: rows[0].details,
           })),
         },
         select: { date: true, type: true, amount: true, details: true },
       });
       for (const e of existing) {
-        existingSet.add(`${+e.date}|${e.type}|${e.amount}|${e.details}`);
+        const key = `${+e.date}|${e.type}|${e.amount}|${e.details}`;
+        dbKeyCounts.set(key, (dbKeyCounts.get(key) ?? 0) + 1);
       }
     }
 
-    const newRows = txRows.filter(
-      (tx) => !existingSet.has(`${+tx.date}|${tx.type}|${tx.amount}|${tx.details}`)
-    );
+    // Insert only the delta: csvCount - dbCount copies of each key
+    const newRows: TxRow[] = [];
+    for (const [key, rows] of csvGroups) {
+      const alreadyInDb = dbKeyCounts.get(key) ?? 0;
+      const toInsert = Math.max(0, rows.length - alreadyInDb);
+      newRows.push(...rows.slice(0, toInsert));
+    }
 
     if (newRows.length === 0) return 0;
 

@@ -63,6 +63,48 @@ describe("TransactionService", () => {
     expect(result).toBe(1);
   });
 
+  it("imports both rows when CSV has two identical transactions (e.g. two rent payments same day)", async () => {
+    const DUPLICATE_CSV = [
+      "Type,Details,Particulars,Code,Reference,Amount,Date,ForeignCurrencyAmount,ConversionCharge",
+      '"Payment","Propertybrokers","Property Bro","10 Awatea St","Levin 5510","-480.00","28/05/2026","",""',
+      '"Payment","Propertybrokers","Property Bro","10 Awatea St","Levin 5510","-480.00","28/05/2026","",""',
+    ].join("\n");
+
+    setupCategoryMap();
+    // DB has no existing records for this key
+    mockPrisma.transaction.findMany.mockResolvedValue([]);
+    mockPrisma.transaction.createMany.mockResolvedValue({ count: 2 });
+
+    const result = await service.importCsv(DUPLICATE_CSV);
+    expect(result).toBe(2);
+    expect(mockPrisma.transaction.createMany).toHaveBeenCalledWith(
+      expect.objectContaining({ data: expect.arrayContaining([expect.objectContaining({ details: "Propertybrokers" })]) })
+    );
+    const callArgs = mockPrisma.transaction.createMany.mock.calls[0][0];
+    expect(callArgs.data).toHaveLength(2);
+  });
+
+  it("re-importing same CSV with duplicate rows inserts zero (already stored both)", async () => {
+    const DUPLICATE_CSV = [
+      "Type,Details,Particulars,Code,Reference,Amount,Date,ForeignCurrencyAmount,ConversionCharge",
+      '"Payment","Propertybrokers","Property Bro","10 Awatea St","Levin 5510","-480.00","28/05/2026","",""',
+      '"Payment","Propertybrokers","Property Bro","10 Awatea St","Levin 5510","-480.00","28/05/2026","",""',
+    ].join("\n");
+
+    setupCategoryMap();
+    const { parse } = await import("date-fns");
+    const parsedDate = parse("28/05/2026", "dd/MM/yyyy", new Date());
+    // DB already has both rows
+    mockPrisma.transaction.findMany.mockResolvedValue([
+      { date: parsedDate, type: "Payment", amount: -48000, details: "Propertybrokers" },
+      { date: parsedDate, type: "Payment", amount: -48000, details: "Propertybrokers" },
+    ]);
+
+    const result = await service.importCsv(DUPLICATE_CSV);
+    expect(result).toBe(0);
+    expect(mockPrisma.transaction.createMany).not.toHaveBeenCalled();
+  });
+
   it("handles empty CSV", async () => {
     const result = await service.importCsv("");
     expect(result).toBe(0);
